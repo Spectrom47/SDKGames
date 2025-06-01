@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDKGames - Tamagotchi Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Avatar Creation Screen -->
+        <div id="avatar-creation" class="screen">
+            <h1>Create Your Avatar</h1>
+            <div class="avatar-preview">
+                <canvas id="avatar-canvas" width="200" height="200"></canvas>
+            </div>
+            <div class="avatar-options">
+                <button class="avatar-btn" onclick="selectHead('basic')">Basic Face</button>
+                <button class="avatar-btn" onclick="selectHead('happy')">Happy Face</button>
+                <button class="avatar-btn" onclick="selectHead('sad')">Sad Face</button>
+                <button class="avatar-btn" onclick="selectHead('surprised')">Surprised Face</button>
+                <button class="avatar-btn" onclick="selectHead('angry')">Angry Face</button>
+                <button class="avatar-btn" onclick="selectHead('sleepy')">Sleepy Face</button>
+                <button class="avatar-btn" onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div class="stats-panel">
+                <div class="stat">Cash: $<span id="cash">125</span></div>
+                <div class="stat">Health: <span id="health">75</span>/100</div>
+                <div class="stat">Energy: <span id="energy">10</span>/10</div>
+                <div class="stat">Hunger: <span id="hunger">100</span>/100</div>
+                <div class="stat">Happiness: <span id="happiness">75</span>/100</div>
+                <div class="stat">Level: <span id="level">1</span></div>
+            </div>
+            <div class="avatar-display">
+                <canvas id="game-avatar" width="150" height="150"></canvas>
+            </div>
+            <div class="actions-panel">
+                <button onclick="sleep()">Sleep</button>
+                <button onclick="visitDoctor()">Visit Doctor</button>
+                <button onclick="eat()">Eat</button>
+                <button onclick="play()">Play</button>
+                <button onclick="work()">Work</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

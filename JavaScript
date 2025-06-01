@@ -1,0 +1,239 @@
+// Game state
+let gameState = {
+    cash: 125,
+    health: 75,
+    energy: 10,
+    maxEnergy: 10,
+    hunger: 100,
+    happiness: 75,
+    level: 1,
+    avatar: null,
+    lastSleep: 0,
+    doctorCooldown: false
+};
+
+// DOM elements
+const avatarCreationScreen = document.getElementById('avatar-creation');
+const gameScreen = document.getElementById('game-screen');
+const avatarCanvas = document.getElementById('avatar-canvas');
+const gameAvatarCanvas = document.getElementById('game-avatar');
+const cashElement = document.getElementById('cash');
+const healthElement = document.getElementById('health');
+const energyElement = document.getElementById('energy');
+const hungerElement = document.getElementById('hunger');
+const happinessElement = document.getElementById('happiness');
+const levelElement = document.getElementById('level');
+
+// Avatar types
+const avatarTypes = {
+    basic: 'Basic Face',
+    happy: 'Happy Face',
+    sad: 'Sad Face',
+    surprised: 'Surprised Face',
+    angry: 'Angry Face',
+    sleepy: 'Sleepy Face'
+};
+
+// Initialize avatar canvas
+function initAvatarCanvas(canvas, type) {
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.width;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(100, 100, 80, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#000000';
+    
+    // Draw eyes
+    ctx.beginPath();
+    ctx.arc(70, 80, 10, 0, Math.PI * 2);
+    ctx.arc(130, 80, 10, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw mouth based on type
+    switch(type) {
+        case 'happy':
+            ctx.beginPath();
+            ctx.arc(100, 120, 30, 0.2 * Math.PI, 0.8 * Math.PI);
+            ctx.stroke();
+            break;
+        case 'sad':
+            ctx.beginPath();
+            ctx.arc(100, 120, 30, 1.2 * Math.PI, 1.8 * Math.PI);
+            ctx.stroke();
+            break;
+        case 'surprised':
+            ctx.beginPath();
+            ctx.arc(70, 80, 5, 0, Math.PI * 2);
+            ctx.arc(130, 80, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(100, 120, 20, 0, Math.PI * 2);
+            ctx.stroke();
+            break;
+        case 'angry':
+            ctx.beginPath();
+            ctx.moveTo(60, 70);
+            ctx.lineTo(80, 90);
+            ctx.moveTo(120, 70);
+            ctx.lineTo(140, 90);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(70, 120);
+            ctx.lineTo(130, 120);
+            ctx.stroke();
+            break;
+        case 'sleepy':
+            ctx.beginPath();
+            ctx.arc(70, 85, 5, 0, Math.PI);
+            ctx.arc(130, 85, 5, 0, Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(100, 120, 20, 0.2 * Math.PI, 0.8 * Math.PI);
+            ctx.stroke();
+            break;
+        default:
+            ctx.beginPath();
+            ctx.moveTo(70, 120);
+            ctx.lineTo(130, 120);
+            ctx.stroke();
+    }
+}
+
+// Select avatar head
+function selectHead(type) {
+    gameState.avatar = type;
+    initAvatarCanvas(avatarCanvas, type);
+}
+
+// Start game
+function startGame() {
+    if (!gameState.avatar) {
+        alert('Please select an avatar head first!');
+        return;
+    }
+    avatarCreationScreen.classList.add('hidden');
+    gameScreen.classList.remove('hidden');
+    initAvatarCanvas(gameAvatarCanvas, gameState.avatar);
+    gameLoop();
+}
+
+// Game actions
+function sleep() {
+    const currentTime = Date.now();
+    if (currentTime - gameState.lastSleep < 172800000) { // 48 hours in milliseconds
+        if (gameState.energy === 0) {
+            gameState.energy = gameState.maxEnergy;
+            alert('You slept until fully rested!');
+        } else {
+            alert('You can only sleep once every 48 hours!');
+            return;
+        }
+    } else {
+        gameState.energy = gameState.maxEnergy;
+        alert('You got a full night\'s sleep!');
+        gameState.lastSleep = currentTime;
+    }
+    updateStats();
+}
+
+function visitDoctor() {
+    if (gameState.doctorCooldown) {
+        alert('You can only visit the doctor once per day!');
+        return;
+    }
+    
+    const cost = Math.max(10, Math.floor((100 - gameState.health) * 0.75));
+    if (gameState.cash < cost) {
+        alert('You don\'t have enough money!');
+        return;
+    }
+    
+    const healing = Math.min(30, 100 - gameState.health);
+    gameState.health += healing;
+    gameState.cash -= cost;
+    gameState.doctorCooldown = true;
+    
+    healthElement.textContent = gameState.health;
+    cashElement.textContent = gameState.cash;
+    
+    setTimeout(() => {
+        gameState.doctorCooldown = false;
+    }, 86400000); // 24 hours in milliseconds
+}
+
+function eat() {
+    if (gameState.cash < 5) {
+        alert('You don\'t have enough money for food!');
+        return;
+    }
+    
+    gameState.cash -= 5;
+    gameState.hunger = Math.min(100, gameState.hunger + 25);
+    gameState.health = Math.min(100, gameState.health + 5);
+    gameState.energy = Math.min(gameState.maxEnergy, gameState.energy + 2);
+    
+    updateStats();
+}
+
+function play() {
+    if (gameState.energy < 2) {
+        alert('You don\'t have enough energy to play!');
+        return;
+    }
+    
+    gameState.energy -= 2;
+    gameState.happiness = Math.min(100, gameState.happiness + 15);
+    gameState.hunger = Math.max(0, gameState.hunger - 10);
+    
+    updateStats();
+}
+
+function work() {
+    if (gameState.energy < 3) {
+        alert('You don\'t have enough energy to work!');
+        return;
+    }
+    
+    gameState.energy -= 3;
+    gameState.hunger = Math.max(0, gameState.hunger - 15);
+    gameState.happiness = Math.max(0, gameState.happiness - 5);
+    gameState.cash += Math.floor(Math.random() * 16) + 15;
+    
+    updateStats();
+}
+
+// Update UI stats
+function updateStats() {
+    cashElement.textContent = gameState.cash;
+    healthElement.textContent = gameState.health;
+    energyElement.textContent = gameState.energy;
+    hungerElement.textContent = gameState.hunger;
+    happinessElement.textContent = gameState.happiness;
+    levelElement.textContent = gameState.level;
+}
+
+// Game loop
+function gameLoop() {
+    // Gradual stat changes
+    gameState.hunger = Math.max(0, gameState.hunger - 0.5);
+    gameState.happiness = Math.max(0, gameState.happiness - 0.3);
+    gameState.health = Math.max(0, gameState.health - 0.2);
+    gameState.energy = Math.max(0, Math.min(gameState.maxEnergy, gameState.energy - 0.1));
+    
+    // Check for level up
+    if (gameState.cash >= gameState.level * 100 && gameState.level < 10) {
+        gameState.level++;
+        alert(`You leveled up to level ${gameState.level}!`);
+    }
+    
+    // Check for game over
+    if (gameState.health <= 0) {
+        alert('Game Over! Your avatar has run out of health.');
+        // Reset game or show game over screen
+    }
+    
+    updateStats();
+    setTimeout(gameLoop, 1000);
+}
