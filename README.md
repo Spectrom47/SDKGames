@@ -1,2 +1,3 @@
-# SDKGames
-Trying to make an external game application that will work with discord
+# My Python Applications!
+
+# This is everything Summarized Into 1 big portfolio!
